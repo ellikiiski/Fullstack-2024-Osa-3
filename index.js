@@ -48,6 +48,14 @@ app.get('/', (request, response) => {
     response.send('<h2>Puhelinluettelon bäkkäri, tervetuloa!</h2>')
 })
 
+app.get('/info', (request, response) => {
+    const time = new Date()
+    const number = persons.length
+    const text = `<p>Phonebook has info for ${number} people.<br>${time}</p><br>`
+    
+    response.send(text)
+})
+
 app.get('/api/persons', (request, response) => {
     response.json(persons)
 })
