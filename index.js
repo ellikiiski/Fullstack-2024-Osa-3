@@ -32,7 +32,6 @@ const errorHandler = (error, request, response, next) => {
 app.use(express.json())
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
-// mulla menny ohi mikä tää nyt onkaan mutta toteutan nyt mallin mukaan tässä kohtaa...
 const unknownEndpoint = (request, response) => {
     response.status(404).send({ error: 'unknown endpoint' })
 }
@@ -42,11 +41,12 @@ app.get('/', (request, response) => {
 })
 
 app.get('/info', (request, response) => {
-    const time = new Date()
-    const number = persons.length
-    const text = `<p>Phonebook has info for ${number} people.<br>${time}</p><br>`
-    
-    response.send(text)
+    Contact.find({}).then(contacts => {
+        const time = new Date()
+        const number = contacts.length
+        const text = `<p>Phonebook has info for ${number} people.<br>${time}</p><br>`
+        response.send(text)
+    })
 })
 
 app.get('/api/persons', (request, response) => {
