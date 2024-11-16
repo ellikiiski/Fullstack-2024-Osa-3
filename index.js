@@ -19,8 +19,23 @@ morgan.token('body', (request, response) => {
     : ''
 })
 
+const errorHandler = (error, request, response, next) => {
+    console.error(error.message)
+
+    if (error.name == 'CastError') {
+        return response.status(400).send({ error: 'malformatted id' })
+    }
+
+    next(error)
+}
+
 app.use(express.json())
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
+
+// mulla menny ohi mikä tää nyt onkaan mutta toteutan nyt mallin mukaan tässä kohtaa...
+const unknownEndpoint = (request, response) => {
+    response.status(404).send({ error: 'unknown endpoint' })
+}
 
 app.get('/', (request, response) => {
     response.send('<h2>Puhelinluettelon bäkkäri, tervetuloa!</h2>')
@@ -40,16 +55,25 @@ app.get('/api/persons', (request, response) => {
     })
 })
 
-app.get('/api/persons/:id', (request, response) => {
-    Contact.findById(request.params.id).then(contact => {
-        response.json(contact)
-    })
+app.get('/api/persons/:id', (request, response, next) => {
+    Contact.findById(request.params.id)
+        .then(contact => {
+            if (contact) {
+                response.json(contact)
+            } else {
+                response.status(404).end()
+            }
+        })
+        .catch(error => next(error))
 })
 
-app.delete('/api/persons/:id', (request, response) => {
+app.delete('/api/persons/:id', (request, response, next) => {
     Contact.findByIdAndDelete(request.params.id)
         .then(result => {
             response.status(204).end()
+        })
+        .catch(error => {
+            next(error)
         })
 })
 
@@ -77,6 +101,9 @@ app.post('/api/persons', (request, response) => {
         response.json(savedContact)
     })
 })
+
+app.use(unknownEndpoint)
+app.use(errorHandler)
 
 const PORT = process.env.PORT
 app.listen(PORT, () => {
