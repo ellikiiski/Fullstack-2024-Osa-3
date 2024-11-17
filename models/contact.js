@@ -20,7 +20,12 @@ const contactSchema = new mongoose.Schema({
     minlength: 3,
     required: true
   },
-  number: String,
+  number: {
+    type: String,
+    minlength: 8,
+    match: /^\d{2,3}-\d+$/,
+    required: true
+  }
 })
 
 contactSchema.set('toJSON', {
