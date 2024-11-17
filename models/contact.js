@@ -17,13 +17,21 @@ mongoose.connect(url)
 const contactSchema = new mongoose.Schema({
   name: {
     type: String,
-    minlength: 3,
+    minlength: [3, 'Name is too short!'],
     required: true
   },
   number: {
     type: String,
-    minlength: 8,
-    match: /^\d{2,3}-\d+$/,
+    //minlength: 8,
+    //match: /^\d{2,3}-\d+$/,
+    //// <-- would probably prefer these
+    //// but this was the way instructed --->
+    validate: {
+      validator: function(v) {
+        return /^\d{2,3}-\d+$/.test(v) && v.length >= 8
+      },
+      message: props => `${props.value} is not a valid phone number`
+    },
     required: true
   }
 })
